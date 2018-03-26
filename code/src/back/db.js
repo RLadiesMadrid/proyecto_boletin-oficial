@@ -1,8 +1,8 @@
-const mysql      = require('mysql');
+const mysql  = require('mysql');
 const config = require('./config');
 let db = {};
-
 const connection = mysql.createConnection(config.db);
+
 db.connect = ()=>{
 	return connection.connect();
 };
@@ -14,6 +14,10 @@ db.getKeywords = () =>{
 			resolve(results);
 		});
 	})
+};
+
+db.findDocumentsByKeyword =() =>{
+
 };
 
 db.saveText = (text,code,date,link)=>{
@@ -37,6 +41,7 @@ db.saveKeywords = (keywords)=>{
 		});
 	});
 };
+
 db.saveTextKeyword = (textid,keywordid,times) =>{
 	return new Promise((resolve, reject)=>{
 		connection.query('INSERT INTO rawtext_keywords (rawtextid,keywordid,times) VALUES ('+textid+','+keywordid+','+times+')', (error, results, fields)=> {

@@ -1,0 +1,39 @@
+CREATE DATABASE bocm_data;
+CREATE USER 'rladies'@'localhost' IDENTIFIED BY 'rl4d13$.-';
+GRANT ALL PRIVILEGES ON bocm_data. * TO 'rladies'@'localhost';
+
+USE bocm_data;
+
+CREATE TABLE rawtext (
+id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+text MEDIUMTEXT,
+code varchar(50),
+date DATETIME,
+link VARCHAR(2083)
+);
+
+CREATE TABLE keywords (
+id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+keyword VARCHAR(255),
+unique(keyword)
+);
+
+CREATE TABLE rawtext_keywords (
+    rawtextid INT UNSIGNED NOT NULL,
+    keywordid INT UNSIGNED NOT NULL,
+    times SMALLINT,
+    PRIMARY KEY (rawtextid, keywordid),
+    CONSTRAINT rawtext_keywords_rawtext_fk
+        FOREIGN KEY `rawtextid_fk` (rawtextid) REFERENCES `rawtext`(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT rawtext_keywords_keywords_fk
+        FOREIGN KEY `keywordid_fk` (keywordid) REFERENCES `keywords`(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+INSERT INTO keywords
+    (keyword)
+VALUES
+    ("concesi"),
+    ("indra"),
+    ("millon");

@@ -1,8 +1,6 @@
 const request = require('request');
-const fs = require('fs');
 const PDFParser = require("pdf2json");
 const moment = require('moment');
-// const getData = require('./getData');
 let dateInit = moment("2017-10-01");
 let dateEnd = moment();
 const db = require('./db');
@@ -23,9 +21,8 @@ function getData(date,index){
 			let textToSave =pdfParser.getRawTextContent();
 			let words = await db.getKeywords();
 			db.saveText(textToSave, date.format('YYYYMMDD') + '-' + index, date.format('YYYY-MM-DD'), url).then((e)=>{
-				console.log(e.insertId);
 				findInText(textToSave,words,e.insertId);
-			// 	console.log("saving good")
+				console.log("save data correctly",date.format('YYYY-MM-DD'))
 			});
 			setTimeout(()=>{
 				index++;
@@ -40,36 +37,10 @@ function getData(date,index){
 	}
 }
 function findInText(text,words,textid) {
-	words.forEach((w)=>{
-		let count = (text.match(new RegExp(w.keyword,'g')) || []).length;
-		// console.log(w);
-		db.saveTextKeyword(textid,w.id,count).then(()=>{
-
-		}).catch((err)=>{
-			// console.error(err);
-		});
-	})
+		words.forEach((w)=>{
+			let count = (text.match(new RegExp(w.keyword,'g')) || []).length;
+			// console.log(w);
+			db.saveTextKeyword(textid,w.id,count)
+		})
 }
 getData(dateInit,1);
-// async function run(date,index) {
-// 	try {
-// 		await db.connect();
-// 		const url = 'https://www.bocm.es/boletin/CM_Orden_BOCM/' + date.format('YYYY/MM/DD') + '/BOCM-' + date.format('YYYYMMDD') + '-' + index + '.PDF';
-// 		let textData = await getData.get(url);
-// 		let keywords = await db.getKeywords();
-// 		// let text = findInText(keywords, textData);
-// 		await db.saveText(textData, date.format('YYYYMMDD') + '-' + index, date.format('YYYYMMDD'), url);
-// 		getData(date.add(1, 'days'), index++);
-// 		//find in text the keywords
-// 		//
-//
-// 		getData(dateInit, 54);
-// 	} catch (err) {
-// 		setTimeout(() => {
-// 			index++;
-// 			getData(date, 1);
-// 		}, 4000)
-// 	}
-// }
-//
-// run();
