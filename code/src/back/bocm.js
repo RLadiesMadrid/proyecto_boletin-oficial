@@ -1,9 +1,11 @@
 const request = require('request');
+const fs = require('fs');
 const PDFParser = require("pdf2json");
 const moment = require('moment');
-let dateInit = moment("2017-10-01");
+let dateInit = moment("2017-10-04");
 let dateEnd = moment();
 const db = require('./db');
+const seconds = 7000;
 
 function getData(date,index){
 	if (date < dateEnd){
@@ -13,34 +15,52 @@ function getData(date,index){
 		let pdfParser = new PDFParser(this,1);
 		pdfParser.on("pdfParser_dataError", errData => {
 			console.error(errData.parserError);
+            setLastDate({date:date.format('YYYY-MM-DD'),index:index});
 			setTimeout(()=>{
 				getData(date.add(1,'days'),1);
-			},4000)
+			},seconds)
 		});
 		pdfParser.on("pdfParser_dataReady", async pdfData => {
 			let textToSave =pdfParser.getRawTextContent();
-			let words = await db.getKeywords();
 			db.saveText(textToSave, date.format('YYYYMMDD') + '-' + index, date.format('YYYY-MM-DD'), url).then((e)=>{
-				findInText(textToSave,words,e.insertId);
-				console.log("save data correctly",date.format('YYYY-MM-DD'))
+				console.log("save data correctly",date.format('YYYY-MM-DD'));
+				setLastDate({date:date.format('YYYY-MM-DD'),index:index})
 			});
 			setTimeout(()=>{
 				index++;
 				getData(date,index);
-			},4000)
+			},seconds)
 		});
-		request({url: url, encoding:null}).pipe(pdfParser);
+		request({url: url, encoding:null})
+			.on('error', (err)=> {
+                setLastDate({date:date.format('YYYY-MM-DD'),index:index});
+                setTimeout(()=>{getData(date,index);},seconds);
+				console.log("error",err);
+			}).pipe(pdfParser);
 		} catch (err) {
-			setTimeout(()=>{
-				getData(date,index);},4000)
+			setTimeout(()=>{getData(date,index);},seconds)
 		}
 	}
 }
-function findInText(text,words,textid) {
-		words.forEach((w)=>{
-			let count = (text.match(new RegExp(w.keyword,'g')) || []).length;
-			// console.log(w);
-			db.saveTextKeyword(textid,w.id,count)
-		})
-}
-getData(dateInit,1);
+
+getLastDate = ()=> {
+    return new Promise((resolve,reject)=>{
+        fs.readFile('lastDate', (err,data) => {
+            if (err) {
+                return resolve({date:dateInit,index:1});
+            }
+            console.log("soy los datos",data);
+            return resolve(JSON.parse(data));
+        });
+	})
+};
+setLastDate = (data) =>{
+	fs.writeFile('lastDate',JSON.stringify(data),(err)=>{
+		if (err) return 'error';
+		return 'saved';
+	})
+};
+
+getLastDate().then((lastDate)=>{
+    getData(moment(lastDate.date),lastDate.index);
+});

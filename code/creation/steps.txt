@@ -1,7 +1,8 @@
 CREATE DATABASE bocm_data;
-CREATE USER 'rladies'@'localhost' IDENTIFIED BY 'rl4d13$.-';
-GRANT ALL PRIVILEGES ON bocm_data. * TO 'rladies'@'localhost';
-
+CREATE USER 'rladies'@'127.0.0.1' IDENTIFIED BY 'rl4d13s';
+GRANT ALL PRIVILEGES ON bocm_data.* TO 'rladies'@'127.0.0.1' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON mydb.* TO 'myuser'@'%' WITH GRANT OPTION;
+GRANT INSERT ON bocm_data.* TO 'rladies'@'%' WITH GRANT OPTION;
 USE bocm_data;
 
 CREATE TABLE rawtext (
